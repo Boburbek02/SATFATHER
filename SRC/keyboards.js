@@ -34,6 +34,7 @@ class Keyboards {
             { text: "📖 Practise Tests" },
           ],
           [{ text: "📊 My Progress" }, { text: "📂 Thematic Tests" }],
+          [{ text: "🧠 Practice Vocabulary" }, { text: "💬 Q&A" }],
         ],
         resize_keyboard: true,
       },
@@ -58,6 +59,7 @@ class Keyboards {
       reply_markup: {
         keyboard: [["🔙 Back"]],
         resize_keyboard: true,
+        one_time_keyboard: false,
       },
     };
   }
