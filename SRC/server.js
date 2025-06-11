@@ -13,29 +13,26 @@ const {
   channelPostHandler,
   menuHandler,
   helpCommand,
+  aboutCommand,
 } = require("./HelperFunctions/messageHandlers");
 const { initializeAdmin } = require("./HelperFunctions/botHelperFunctions");
 const { getUserState } = require("./userStates/userStates");
 const {keyboardAdjustment} = require('./HelperFunctions/botHelperFunctions')
+// const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 
-const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
-
-
-
-
-
-const difficulty = ["Easy", "Medium", "Hard"];
-// ✅ Initialize Superadmin
+// Initialize Superadmin
 initializeAdmin();
 
-// ✅ `/start` Command
+// handling Commands
 bot.onText(/\/start/, commandHandler);
 
 bot.onText(/\/menu/, menuHandler);
 
 bot.onText(/\/help/, helpCommand);
 
-// ✅ Handle Contact Sharing & Admin Detection
+bot.onText(/\/about/, aboutCommand)
+
+// Handling Contact Sharing & Admin Detection
 bot.on("contact", contactHandler);
 
 // handling text messages

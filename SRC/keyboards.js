@@ -29,12 +29,9 @@ class Keyboards {
     return {
       reply_markup: {
         keyboard: [
-          [
-            { text: "📚 Solve Random Questions" },
-            { text: "📖 Practise Tests" },
-          ],
-          [{ text: "📊 My Progress" }, { text: "📂 Thematic Tests" }],
-          [{ text: "🧠 Practice Vocabulary" }, { text: "💬 Q&A" }],
+          [{ text: "📚 Daily Challenges" }, { text: "🧠 Practice Vocabulary" }],
+          [{ text: "📖 Practice Tests" }, { text: "📂 Thematic Tests" }],
+          [{ text: "📊 My Progress" }, { text: "💬 Q&A" }],
         ],
         resize_keyboard: true,
       },

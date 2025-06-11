@@ -181,8 +181,6 @@ async function textHandler (msg){
       return;
     }
 
-    console.log(getUserState(userId, "state"));
-
     if (result[0].role === "superadmin") {
       if (text === "🔙 Back") {
         // delete userStates[userId];
@@ -631,6 +629,15 @@ async function textHandler (msg){
             console.log(error.stack);
           }
         }
+      }
+
+      if(text==="🧠 Practice Vocabulary"){
+        setUserState(userId, "state", "awaiting_vocabulary_book");
+
+        bot.copyMessage(chatId, -1002347780372, 100);
+        bot.copyMessage(chatId, -1002347780372, 102);
+        return;
+
       }
     }
   } catch (error) {
@@ -1248,7 +1255,7 @@ async function channelPostHandler(msg){
     const fileId = document.file_id;
     const fileName = document.file_name || "Unnamed Document";
 
-    await bot.sendDocument(ADMIN_CHAT_ID, fileId, {
+    await bot.sendDocument(process.env.ADMIN_CHAT_ID, fileId, {
       caption: `📄 *New Document from Channel*\n\n**File Name:** ${fileName}\n**File ID:** \`${fileId}\``,
       parse_mode: "Markdown",
     });
@@ -1305,9 +1312,16 @@ async function menuHandler(msg){
 async function helpCommand(msg){
   const userId = msg.from.id;
   const chatId = msg.chat.id;
-  return bot.forwardMessage(chatId, -1002347780372, 98);
+  bot.copyMessage(chatId, -1002347780372, 98);
+}
+
+// a function to handle about command 
+async function aboutCommand(msg){
+  const userId = msg.from.id;
+  const chatId = msg.chat.id;
+  bot.copyMessage(chatId, -1002347780372, 99);
 }
 
 
 
-module.exports = {commandHandler, contactHandler, textHandler, documentHandler, callbackHandler, inlineQueryHandler, channelPostHandler, menuHandler, helpCommand}
+module.exports = {commandHandler, contactHandler, textHandler, documentHandler, callbackHandler, inlineQueryHandler, channelPostHandler, menuHandler, helpCommand, aboutCommand}
