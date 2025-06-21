@@ -1,8 +1,8 @@
 require("dotenv").config();
-const pool = require("./Configurations/mysqlConfiguration");
+const pool = require("./SRC/Configurations/mysqlConfiguration");
 const crypto = require("crypto");
-const Keyboards = require("./keyboards");
-const bot = require("./Configurations/botConfig");
+const Keyboards = require("./SRC/keyboards");
+const bot = require("./SRC/Configurations/botConfig");
 const {
   commandHandler,
   contactHandler,
@@ -14,8 +14,8 @@ const {
   menuHandler,
   helpCommand,
   aboutCommand,
-} = require("./HelperFunctions/messageHandlers");
-const { initializeAdmin } = require("./HelperFunctions/botHelperFunctions");
+} = require("./SRC/HelperFunctions/messageHandlers");
+const { initializeAdmin } = require("./SRC/HelperFunctions/botHelperFunctions");
 // initialize superadmin;
 initializeAdmin();
 

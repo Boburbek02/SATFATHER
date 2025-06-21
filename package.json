@@ -1,10 +1,10 @@
 {
   "name": "telegram-bot-project",
   "version": "1.0.0",
-  "main": "SRC/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node SRC/server.js",
-    "dev": "nodemon SRC/server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
