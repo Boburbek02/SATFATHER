@@ -56,7 +56,7 @@ class Keyboards {
       reply_markup: {
         keyboard: [["🔙 Back"]],
         resize_keyboard: true,
-        one_time_keyboard: false,
+        one_time_keyboard: true,
       },
     };
   }

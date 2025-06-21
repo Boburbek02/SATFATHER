@@ -16,11 +16,7 @@ const {
   aboutCommand,
 } = require("./HelperFunctions/messageHandlers");
 const { initializeAdmin } = require("./HelperFunctions/botHelperFunctions");
-const { getUserState } = require("./userStates/userStates");
-const {keyboardAdjustment} = require('./HelperFunctions/botHelperFunctions')
-// const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
-
-// Initialize Superadmin
+// initialize superadmin;
 initializeAdmin();
 
 // handling Commands
@@ -36,7 +32,7 @@ bot.onText(/\/about/, aboutCommand)
 bot.on("contact", contactHandler);
 
 // handling text messages
-bot.on("text", textHandler);
+bot.on("message", textHandler);
 
 // handling file uploads
 bot.on("document", documentHandler);
@@ -50,4 +46,5 @@ bot.on("channel_post", channelPostHandler);
 // handling inline queries
 bot.on("inline_query", inlineQueryHandler);
 
+// connection check
 console.log("🤖 Bot started...");

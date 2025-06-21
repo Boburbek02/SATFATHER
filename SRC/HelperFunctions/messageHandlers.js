@@ -38,7 +38,7 @@ async function commandHandler(msg){
     const chatId = msg.chat.id;
     const userId = msg.from.id;
 
-    // console.log(msg)
+    console.log(msg)
 
     const fullName = msg.from.last_name
       ? `${msg.from.first_name} ${msg.from.last_name}`
@@ -101,6 +101,8 @@ async function contactHandler(msg){
       const fullName = msg.from.last_name
         ? `${msg.from.first_name} ${msg.from.last_name}`
         : msg.from.first_name;
+
+        console.log(msg)
 
       let sql, result, message;
 
@@ -166,7 +168,7 @@ async function textHandler (msg){
   const text = msg.text;
   try {
     let sql, result;
-    if (text.startsWith("/")) return;
+    // if (text.startsWith("/")) return;
 
     // Check if this user is an admin
     sql = "SELECT * FROM users WHERE user_id = ?";
@@ -180,6 +182,52 @@ async function textHandler (msg){
       );
       return;
     }
+
+    // handling admin replies in Q&A
+    if (Number(msg.chat.id) === Number(process.env.GROUP_ID)) {
+      const replyTo = msg.reply_to_message;
+      if (!replyTo) return; // Only handle replies
+
+      const repliedMessageId = replyTo.message_id;
+
+      try {
+        const [rows] = await pool.query(
+          `SELECT original_chat_id, original_message_id FROM copied_messages WHERE copied_message_id = ?`,
+          [repliedMessageId]
+        );
+
+        if (!rows.length) {
+          console.log("No original message mapping found for admin reply.");
+          return;
+        }
+
+        const originalUserId = rows[0].original_chat_id;
+        const originalMessageId = rows[0].original_message_id;
+
+        const sent = await bot.copyMessage(
+          originalUserId,
+          msg.chat.id,
+          msg.message_id,
+          {
+            reply_to_message_id: originalMessageId,
+          }
+        );
+
+        if (sent?.message_id) {
+          await pool.query(
+            `INSERT INTO copied_messages 
+         (original_chat_id, original_message_id, copied_message_id, status, created_at)
+         VALUES (?, ?, ?, 'admin_reply', NOW())`,
+            [process.env.BOT_USER_ID, msg.message_id, sent.message_id]
+          );
+
+          console.log("✅ Admin reply forwarded to user:", originalUserId);
+        }
+      } catch (err) {
+        console.error("❌ Error replying to user:", err.message);
+      }
+    }
+
 
     if (result[0].role === "superadmin") {
       if (text === "🔙 Back") {
@@ -277,7 +325,7 @@ async function textHandler (msg){
         bot.sendMessage(chatId, "Main Menu", Keyboards.menuUser());
       }
 
-      if (text === "📚 Solve Random Questions") {
+      if (text === "📚 Daily Challenges") {
         // userStates[userId] = { status: "solving_random_questions" };
         setUserState(userId, "state", "solving_random_questions");
         await bot.sendMessage(
@@ -301,7 +349,7 @@ async function textHandler (msg){
         return;
       }
 
-      if (text === "📖 Practise Tests") {
+      if (text === "📖 Practice Tests") {
         // userStates[userId] = { status: "solving_practise_tests" };
         setUserState(userId, "state", "solving_practise_tests");
         await bot.sendMessage(
@@ -634,11 +682,115 @@ async function textHandler (msg){
       if(text==="🧠 Practice Vocabulary"){
         setUserState(userId, "state", "awaiting_vocabulary_book");
 
-        bot.copyMessage(chatId, -1002347780372, 100);
-        bot.copyMessage(chatId, -1002347780372, 102);
+        bot.copyMessage(chatId, process.env.CHANNEL_ID, 100);
+        bot.copyMessage(chatId, process.env.CHANNEL_ID, 102);
         return;
 
       }
+      
+      // handling Q&A section
+      if(text ==="💬 Q&A"){
+        const message = "Feel free to ask what you want!"
+        setUserState(userId, "state", "awaiting_messages_from_user");
+        bot.sendMessage(userId, message, Keyboards.backToMainMenu())
+      }
+      
+      if (getUserState(userId, "state") === "awaiting_messages_from_user") {
+        try {
+          const messageId = msg.message_id;
+          const replyToId = msg.reply_to_message?.message_id ?? null;
+          const isReplyToSelf = msg.reply_to_message?.from?.id === userId;
+
+          const sentId = isReplyToSelf
+            ? userId.toString()
+            : process.env.BOT_USER_ID;
+          const fromChatId = userId;
+          const toChatId = process.env.GROUP_ID;
+
+          console.log(
+            `Reply from user ID: ${msg.reply_to_message?.from?.id}, userId: ${userId}`
+          );
+
+          let copied_message;
+
+          // Helper function to perform copy and log
+          async function copyAndLog(
+            originalChatId,
+            originalMessageId,
+            replyToCopiedId = null
+          ) {
+            try {
+              const options = replyToCopiedId
+                ? { reply_to_message_id: replyToCopiedId }
+                : {};
+
+              const copied = await bot.copyMessage(
+                toChatId,
+                originalChatId,
+                originalMessageId,
+                options
+              );
+
+              if (copied?.message_id) {
+                await pool.query(
+                  `INSERT INTO copied_messages 
+             (original_chat_id, original_message_id, copied_message_id, status, created_at)
+             VALUES (?, ?, ?, 'success', NOW())`,
+                  [originalChatId, originalMessageId, copied.message_id]
+                );
+                console.log("Copied and logged message:", copied.message_id);
+              }
+
+              return copied;
+            } catch (error) {
+              console.error("Error during copyAndLog:", error.message);
+              return null;
+            }
+          }
+
+          if (replyToId) {
+            if (isReplyToSelf) {
+              const [rows] = await pool.query(
+                `SELECT * FROM copied_messages WHERE original_message_id = ? AND original_chat_id = ? LIMIT 1`,
+                [replyToId, userId]
+              );
+
+              if (rows.length) {
+                copied_message = await copyAndLog(
+                  fromChatId,
+                  messageId,
+                  rows[0].copied_message_id
+                );
+              } else {
+                copied_message = await copyAndLog(fromChatId, messageId);
+              }
+            } else {
+              const [rows] = await pool.query(
+                `SELECT * FROM copied_messages WHERE copied_message_id = ? AND original_chat_id = ? LIMIT 1`,
+                [replyToId, process.env.BOT_USER_ID]
+              );
+
+              if (rows.length) {
+                copied_message = await copyAndLog(
+                  fromChatId,
+                  messageId,
+                  rows[0].original_message_id
+                );
+              } else {
+                copied_message = await copyAndLog(fromChatId, messageId);
+              }
+            }
+          } else {
+            // Not a reply, copy normally
+            copied_message = await copyAndLog(fromChatId, messageId);
+          }
+        } catch (err) {
+          console.error("Error handling message copy:", err.message);
+        }
+      }
+
+
+
     }
   } catch (error) {
     console.log(error);
@@ -657,6 +809,10 @@ async function documentHandler(msg){
 
   const chatId = msg.chat.id;
   const userId = msg.from.id;
+
+  if (getUserState(userId, "state") === "awaiting_messages_from_user") return;
+
+  
 
   // Check user role
   let sql = "SELECT * FROM users WHERE user_id = ?";
