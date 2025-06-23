@@ -971,12 +971,14 @@ async function documentHandler(msg){
     // userStates[userId].practiseTest.practise_test = fileId;
     // userStates[userId].status = "awaiting_practise_name";
     setUserState(userId, "practiseFile", fileId);
-    setUserState(userId, "state", "awaiting_practise_name");
+    // setUserState(userId, "state", "awaiting_practise_name");
 
     await bot.sendMessage(
       chatId,
       "Thank you, now send me the description of this practise test!!!"
     );
+
+    setUserState(userId, "state", "awaiting_practise_name");
     return;
   }
 
