@@ -1319,100 +1319,93 @@ async function callbackHandler (query){
 
 // function to handle inline queries
 
-async function inlineQueryHandler(query){
-  const userId = query.from.id; // Get the user ID from the query
+async function inlineQueryHandler(query) {
+  const userId = query.from.id;
   const search = query.query.toLowerCase();
-  // console.log(userStates)
 
   try {
-    let sql = "SELECT * FROM users WHERE user_id = ?";
-    let [result] = await pool.query(sql, [userId]);
+    // Check if user is superadmin requesting user list
+    const [userResult] = await pool.query(
+      "SELECT * FROM users WHERE user_id = ?",
+      [userId]
+    );
+    const user = userResult[0];
 
-    console.log(result);
-
-    if (
-      result.length > 0 &&
-      result[0].role === "superadmin" &&
-      search === "users"
-    ) {
-      // Query all users
+    if (user && user.role === "superadmin" && search === "users") {
       const [users] = await pool.execute("SELECT * FROM users");
 
       if (users.length === 0) {
         await bot.answerInlineQuery(query.id, [], { cache_time: 0 });
-      } else {
-        const results = users.map((user, index) => ({
-          type: "article",
-          id: String(user.id),
-          title: `${index + 1}. Chat ID: ${user.user_id}`, // Display user ID (chat ID)
-          description: `Name: ${user.full_name}`, // Display name
-          input_message_content: {
-            message_text:
-              `📞 Phone: ${escapeMarkdownV2(user.phone_number)}\n` +
-              `🆔 Chat ID: ${escapeMarkdownV2(user.user_id)}`,
-            parse_mode: "MarkdownV2", // Use MarkdownV2 for text formatting
-          },
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "Get All User Info",
-                  url: `tg://user?id=${user.user_id}`,
-                },
-              ],
-            ],
-          },
-        }));
-
-        await bot.answerInlineQuery(query.id, results, { cache_time: 0 });
+        return;
       }
 
-      return; // prevent fall-through to "else"
+      const results = users.map((user, index) => ({
+        type: "article",
+        id: String(user.id),
+        title: `${index + 1}. Chat ID: ${user.user_id}`,
+        description: `Name: ${user.full_name}`,
+        input_message_content: {
+          message_text:
+            `📞 Phone: ${escapeMarkdownV2(user.phone_number)}\n` +
+            `🆔 Chat ID: ${escapeMarkdownV2(user.user_id)}`,
+          parse_mode: "MarkdownV2",
+        },
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "Get All User Info",
+                url: `tg://user?id=${user.user_id}`,
+              },
+            ],
+          ],
+        },
+      }));
+
+      await bot.answerInlineQuery(query.id, results, { cache_time: 0 });
+      return;
     }
 
-    // Check if the user is in the "solving_practice_tests" state and the search query is exactly "practise"
+    // Practice tests
     if (search === "practice") {
-      // Execute the query to get practice tests
       const [rows] = await pool.execute(
-        `SELECT id, testName, practise_test FROM practice_tests`
+        "SELECT id, testName, practise_test FROM practice_tests"
       );
 
       if (rows.length === 0) {
-        console.log("No results found.");
         await bot.answerInlineQuery(query.id, [], { cache_time: 0 });
         return;
       }
 
-      // Prepare results for inline query
-      const results = rows.map((row) => {
-        return {
-          type: "document",
-          id: String(row.id),
-          title: row.testName,
-          document_file_id: row.practise_test, // Telegram file_id
-          description: "Click to open the SAT practice test",
-          caption: `📘 *${row.testName}*\nYour SAT practice test.`,
-          parse_mode: "Markdown",
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "Search Again",
-                  switch_inline_query_current_chat: "practice", // Sets the inline query to search for "practise"
-                },
-                {
-                  text: "Answers",
-                  callback_data: `answers_${row.id}`,
-                },
-              ],
+      const results = rows.map((row) => ({
+        type: "document",
+        id: String(row.id),
+        title: row.testName,
+        document_file_id: row.practise_test,
+        description: "Click to open the SAT practice test",
+        caption: `📘 *${row.testName}*\nYour SAT practice test.`,
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "Search Again",
+                switch_inline_query_current_chat: "practice",
+              },
+              {
+                text: "Answers",
+                callback_data: `answers_${row.id}`,
+              },
             ],
-          },
-        };
-      });
+          ],
+        },
+      }));
 
-      bot.answerInlineQuery(query.id, results, { cache_time: 0 });
-    } 
+      await bot.answerInlineQuery(query.id, results, { cache_time: 0 });
+      return;
+    }
 
+    // Books
     if (search === "books") {
       const results = books.map((book, index) => ({
         type: "document",
@@ -1433,16 +1426,18 @@ async function inlineQueryHandler(query){
         },
       }));
 
-      bot.answerInlineQuery(query.id, results.slice(0, 50));
-    }else{
-    // if the user is not solving practice tests or the search is not "practise", return no results
-      await bot.answerInlineQuery(query.id, [], { cache_time: 0 });
+      await bot.answerInlineQuery(query.id, results.slice(0, 50));
+      return;
     }
+
+    // Fallback for unmatched queries
+    await bot.answerInlineQuery(query.id, [], { cache_time: 0 });
   } catch (error) {
     console.error("Error handling inline query:", error);
     await keyboardAdjustment(userId);
   }
-};
+}
+
 
 // a function to handle channel posts
 
