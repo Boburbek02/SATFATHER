@@ -1425,7 +1425,7 @@ async function inlineQueryHandler(query){
           inline_keyboard: [
             [
               {
-                text: "Search Again",
+                text: "Search More",
                 switch_inline_query_current_chat: "books",
               },
             ],
