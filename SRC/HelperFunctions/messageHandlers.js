@@ -18,6 +18,8 @@ const domainMatch = {
   "🔢 Algebra": "Algebra",
 };
 
+const books = require('../userStates/books.json')
+
 const domains = [
   "📘 Information and Ideas",
   "📖 Craft and Structure",
@@ -679,13 +681,28 @@ async function textHandler (msg){
         }
       }
 
-      if(text==="🧠 Practice Vocabulary"){
+      if (text === "🧠 Study Materials") {
         setUserState(userId, "state", "awaiting_vocabulary_book");
 
-        bot.copyMessage(chatId, process.env.CHANNEL_ID, 100);
-        bot.copyMessage(chatId, process.env.CHANNEL_ID, 102);
+        // bot.copyMessage(chatId, process.env.CHANNEL_ID, 100);
+        // bot.copyMessage(chatId, process.env.CHANNEL_ID, 102);
+        await bot.sendMessage(
+          msg.chat.id,
+          "Tap below to browse Study materials",
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔍 BROWSE ALL THE BOOKS",
+                    switch_inline_query_current_chat: "books",
+                  },
+                ],
+              ],
+            },
+          }
+        );
         return;
-
       }
       
       // handling Q&A section
@@ -1394,8 +1411,31 @@ async function inlineQueryHandler(query){
       });
 
       bot.answerInlineQuery(query.id, results, { cache_time: 0 });
-    } else {
-      // If the user is not solving practice tests or the search is not "practise", return no results
+    } 
+
+    if (search === "books") {
+      const results = books.map((book, index) => ({
+        type: "document",
+        id: String(index),
+        title: book.title,
+        document_file_id: book.file_id,
+        caption: `📘 *${book.title}*\n👤 _${book.source}_`,
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "Search Again",
+                switch_inline_query_current_chat: "books",
+              },
+            ],
+          ],
+        },
+      }));
+
+      bot.answerInlineQuery(query.id, results.slice(0, 50));
+    }else{
+    // if the user is not solving practice tests or the search is not "practise", return no results
       await bot.answerInlineQuery(query.id, [], { cache_time: 0 });
     }
   } catch (error) {

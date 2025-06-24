@@ -29,7 +29,7 @@ class Keyboards {
     return {
       reply_markup: {
         keyboard: [
-          [{ text: "📚 Daily Challenges" }, { text: "🧠 Practice Vocabulary" }],
+          [{ text: "📚 Daily Challenges" }, { text: "🧠 Study Materials" }],
           [{ text: "📖 Practice Tests" }, { text: "📂 Thematic Tests" }],
           [{ text: "📊 My Progress" }, { text: "💬 Q&A" }],
         ],
