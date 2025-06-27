@@ -1354,8 +1354,8 @@ async function inlineQueryHandler(query) {
             description: `Name: ${fullName}`, // Use template literals correctly
             input_message_content: {
               message_text:
-                `📞 Phone: ${phoneCall}\n` + // Use template literals
-                `🆔 Username: ${userName}`,
+                `📞 Phone: [${phoneCall}](tel:${phone})\n` +
+                `🆔 Username: [${userName}](t.me/${u.username})`,
               parse_mode: "MarkdownV2",
             },
           };
