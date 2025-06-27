@@ -223,4 +223,12 @@ async function escapeMarkdownV2(text) {
 }
 
 
-module.exports = {initializeAdmin, registerUser, generateQuestion, sendNextQuestion, keyboardAdjustment, escapeMarkdownV2}
+
+  (module.exports = {
+    initializeAdmin,
+    registerUser,
+    generateQuestion,
+    sendNextQuestion,
+    keyboardAdjustment,
+    escapeMarkdownV2,
+  });

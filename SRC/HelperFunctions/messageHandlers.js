@@ -1332,39 +1332,46 @@ async function inlineQueryHandler(query) {
     const user = userResult[0];
 
     if (user && user.role === "superadmin" && search === "users") {
-      const [users] = await pool.execute("SELECT * FROM users");
+      const [users] = await pool.execute("SELECT * FROM users LIMIT 50");
 
-      if (users.length === 0) {
+      if (!users.length) {
         await bot.answerInlineQuery(query.id, [], { cache_time: 0 });
         return;
       }
 
-      const results = users.map((user, index) => ({
-        type: "article",
-        id: String(user.id),
-        title: `${index + 1}. Chat ID: ${user.user_id}`,
-        description: `Name: ${user.full_name}`,
-        input_message_content: {
-          message_text:
-            `📞 Phone: ${escapeMarkdownV2(user.phone_number)}\n` +
-            `🆔 Chat ID: ${escapeMarkdownV2(user.user_id)}`,
-          parse_mode: "MarkdownV2",
-        },
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: "Get All User Info",
-                url: `tg://user?id=${user.user_id}`,
-              },
+      const results = users.map((u, index) => {
+        const fullName = u.full_name || "Unknown";
+        const phone = u.phone_number || "Not provided";
+        const chatId = u.user_id ?? "N/A";
+
+        return {
+          type: "article",
+          id: String(u.id),
+          title: `${index + 1}. Chat ID: ${chatId}`,
+          description: `Name: ${fullName}`,
+          input_message_content: {
+            message_text:
+              `📞 Phone: ${escapeMarkdownV2(phone)}\n` +
+              `🆔 Chat ID: ${escapeMarkdownV2(chatId)}`,
+            parse_mode: "MarkdownV2",
+          },
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "Get All User Info",
+                  url: `tg://user?id=${u.user_id}`,
+                },
+              ],
             ],
-          ],
-        },
-      }));
+          },
+        };
+      });
 
       await bot.answerInlineQuery(query.id, results, { cache_time: 0 });
       return;
     }
+
 
     // Practice tests
     if (search === "practice") {
