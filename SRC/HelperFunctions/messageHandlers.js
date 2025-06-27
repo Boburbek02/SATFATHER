@@ -1355,16 +1355,16 @@ async function inlineQueryHandler(query) {
               `🆔 Chat ID: ${escapeMarkdownV2(chatId)}`,
             parse_mode: "MarkdownV2",
           },
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "Get All User Info",
-                  url: `tg://user?id=${u.user_id}`,
-                },
-              ],
-            ],
-          },
+          // reply_markup: {
+          //   inline_keyboard: [
+          //     [
+          //       {
+          //         text: "Get All User Info",
+          //         url: `tg://user?id=${u.user_id}`,
+          //       },
+          //     ],
+          //   ],
+          // },
         };
       });
 
