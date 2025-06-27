@@ -1339,24 +1339,30 @@ async function inlineQueryHandler(query) {
         return;
       }
 
-      const results = users.map((u, index) => {
-        const fullName = u.full_name || "Unknown";
-        const phone = u.phone_number || "Not provided";
-        const chatId = u.user_id ?? "N/A";
+      const results = await Promise.all(
+        // Add 'await Promise.all'
+        users.map(async (u, index) => {
+          const fullName = u.full_name ?? "Unknown"; // Use nullish coalescing
+          const phone = u.phone_number ?? "Not provided"; // Use nullish coalescing
+          const chatId = u.user_id ?? "N/A";
+          const phoneCall = await escapeMarkdownV2(String(phone));
+          const userName = await escapeMarkdownV2(String(u.username));
+          return {
+            type: "article",
+            id: String(u.id),
+            title: `${index + 1}. Chat ID: ${chatId}`, // Use template literals correctly
+            description: `Name: ${fullName}`, // Use template literals correctly
+            input_message_content: {
+              message_text:
+                `📞 Phone: ${phoneCall}\n` + // Use template literals
+                `🆔 Username: ${userName}`,
+              parse_mode: "MarkdownV2",
+            },
+          };
+        })
+      );
 
-        return {
-          type: "article",
-          id: String(u.id),
-          title: `${index + 1}. Chat ID: ${chatId}`,
-          description: `Name: ${fullName}`,
-          input_message_content: {
-            message_text:
-              `📞 Phone: ${escapeMarkdownV2(String(phone))}\n` +
-              `🆔 Chat ID: ${escapeMarkdownV2(String(chatId))}`,
-            parse_mode: "MarkdownV2",
-          },
-        };
-      });
+      console.log(results); //  'results' will now be the array of objects.
 
       await bot.answerInlineQuery(query.id, results, { cache_time: 0 });
       return;
