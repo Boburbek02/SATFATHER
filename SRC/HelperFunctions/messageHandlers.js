@@ -330,7 +330,7 @@ async function textHandler (msg){
          } catch (err) {
            console.error(`❌ Could not send to ${row.user_id}:`, err.message);
          }
-       }
+        }
 
        await bot.sendMessage(
          chatId,
