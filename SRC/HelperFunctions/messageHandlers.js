@@ -232,11 +232,12 @@ async function textHandler (msg){
 
 
     if (result[0].role === "superadmin") {
-      if (text === "🔙 Back") {
-        // delete userStates[userId];
-        setUserState(userId, "state", null)
-        bot.sendMessage(chatId, "Main Menu", Keyboards.adminMenu());
-      }
+      // if (text === "🔙 Back") {
+      //   // delete userStates[userId];
+      //   setUserState(userId, "state", null)
+      //   bot.sendMessage(chatId, "Main Menu", Keyboards.adminMenu());
+      //   return;
+      // }
 
       if (text === "➕ Add Question") {
         // userStates[userId] = { status: "awaiting_questions" };
@@ -336,6 +337,8 @@ async function textHandler (msg){
          chatId,
          "✅ Your post has been delivered to all users."
        );
+
+      return;
      }
 
 
@@ -344,9 +347,9 @@ async function textHandler (msg){
     }
 
     // Handle regular user messages
-      if (text === "🔙 Back") {
+    if (text === "🔙 Back") {
         // Safely reset instead of deleting
-        if (getUserState(userId, "state")) {
+      if (getUserState(userId, "state")) {
           // userStates[userId].status = null;
           // userStates[userId].startTime = null;
           // You can reset or preserve other properties as needed
@@ -356,8 +359,13 @@ async function textHandler (msg){
         }
 
         // Still remove test state if no longer needed
+      if (chatId === process.env.ADMIN_CHAT_ID) {
+          bot.sendMessage(chatId, "Main Menu", Keyboards.adminMenu());
+        } else {
+          bot.sendMessage(chatId, "Main Menu", Keyboards.menuUser());
+        }
 
-        bot.sendMessage(chatId, "Main Menu", Keyboards.menuUser());
+        return;
       }
 
       if (text === "📚 Daily Challenges") {
