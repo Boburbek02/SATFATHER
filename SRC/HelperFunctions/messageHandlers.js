@@ -232,12 +232,12 @@ async function textHandler (msg){
 
 
     if (result[0].role === "superadmin") {
-      // if (text === "🔙 Back") {
-      //   // delete userStates[userId];
-      //   setUserState(userId, "state", null)
-      //   bot.sendMessage(chatId, "Main Menu", Keyboards.adminMenu());
-      //   return;
-      // }
+      if (text === "🔙 Back") {
+        // delete userStates[userId];
+        setUserState(userId, "state", null)
+        bot.sendMessage(chatId, "Main Menu", Keyboards.adminMenu());
+        return;
+      }
 
       if (text === "➕ Add Question") {
         // userStates[userId] = { status: "awaiting_questions" };
@@ -340,10 +340,6 @@ async function textHandler (msg){
 
       return;
      }
-
-
-
-
     }
 
     // Handle regular user messages
