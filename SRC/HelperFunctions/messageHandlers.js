@@ -293,24 +293,57 @@ async function textHandler (msg){
         return;
       }
 
-      if (getUserState(userId, "state" )==="awaiting_practise_name"
-      ) {
-        // userStates[userId].practiseTest.testName = text;
-        setUserState(userId, "testName", text)
-        await bot.sendMessage(
+      if (text === "Send A Post"){
+        setUserState(userId, "state", "awaiting_a_post");
+        bot.sendMessage(
           chatId,
-          "Thank you, now send me the answers of this practise test!!!"
+          "Please, send the post. ",
+          Keyboards.backToMainMenu()
         );
-
-        // userStates[userId].status = "awaiting_practise_answers";
-        setUserState(userId, "state", "awaiting_practise_answers");
-
         return;
       }
+      
+      if (getUserState(userId, "state") === "awaiting_practise_name") {
+          // userStates[userId].practiseTest.testName = text;
+          setUserState(userId, "testName", text);
+          await bot.sendMessage(
+            chatId,
+            "Thank you, now send me the answers of this practise test!!!"
+          );
+
+          // userStates[userId].status = "awaiting_practise_answers";
+          setUserState(userId, "state", "awaiting_practise_answers");
+
+          return;
+      }
+
+     if (getUserState(userId, "state") === "awaiting_a_post") {
+       // Reset state first so user is not stuck
+       setUserState(userId, null);
+
+       const sql = "SELECT user_id FROM users WHERE role = ?";
+       const [allUsers] = await pool.query(sql, ["user"]); // rows only
+
+       for (let row of allUsers) {
+         try {
+           await bot.copyMessage(row.user_id, chatId, msg.message_id);
+         } catch (err) {
+           console.error(`❌ Could not send to ${row.user_id}:`, err.message);
+         }
+       }
+
+       await bot.sendMessage(
+         chatId,
+         "✅ Your post has been delivered to all users."
+       );
+     }
+
+
+
+
     }
 
     // Handle regular user messages
-    if (result[0].role === "user") {
       if (text === "🔙 Back") {
         // Safely reset instead of deleting
         if (getUserState(userId, "state")) {
@@ -808,7 +841,7 @@ async function textHandler (msg){
 
 
 
-    }
+    
   } catch (error) {
     console.log(error);
 

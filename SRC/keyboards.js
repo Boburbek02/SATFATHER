@@ -15,10 +15,11 @@ class Keyboards {
       reply_markup: {
         keyboard: [
           [{ text: "➕ Add Question" }, { text: "➕ Add Practice Test" }],
-          [
-            { text: "🔍 Get User by Contact" },
-            { text: "📂 Add Thematic Tests" },
-          ],
+          [{ text: "🔍 Get User by Contact" },{ text: "📂 Add Thematic Tests" }],
+          [{text: "Send A Post"}],
+          [{ text: "📚 Daily Challenges" }, { text: "🧠 Study Materials" }],
+          [{ text: "📖 Practice Tests" }, { text: "📂 Thematic Tests" }],
+          [{ text: "📊 My Progress" }, { text: "💬 Q&A" }],
         ],
         resize_keyboard: true, // Added to make sure the keyboard fits the screen
       },
